@@ -1304,14 +1304,64 @@ $app->get('/dossier/all', function (Request $request, Response $response,array $
 
 
 //Emplacement d'un dossier
-$app->get('/dossier/item/{dossier_id}', function (Request $request, Response $response,array $args) {
-  $dossier_id = $args['dossier_id'];
-  $request->getAttribute('dossier_id');
-  $sql ="SELECT dossier_id,code_dossier,code_armoire,code_classeur,nom 
-  FROM armoire AS AR INNER JOIN classeur AS CA ON CA.armoire_id=AR.armoire_id
-  INNER JOIN dossier AS D ON D.classeur_id=CA.classeur_id
-  INNER JOIN Traitement AS TA ON TA.dossier_id=D.dossier_id WHERE dossier_id=".$dossier_id;
+$app->get('/dossier/item/{nom}', function (Request $request, Response $response,array $args) {
+  $nom = $args['nom'];
+  $request->getAttribute('nom');
   
+  $sql ="SELECT a.date_traitement,b.code_dossier,b.nom,c.code_classeur,d.code_armoire
+	FROM public.traitement a 
+	JOIN public.dossier b 
+	ON a.dossier_id = b.dossier_id
+	JOIN public.classeur c 
+	ON b.classeur_id = c.classeur_id
+	JOIN public.armoire d
+	ON d.armoire_id = c.armoire_id 
+  WHERE b.nom LIKE '%$nom'  
+  ORDER BY a.date_traitement 
+  ASC LIMIT 1";
+  try {
+    $db = new Db();
+    $conn = $db->connect();
+    $stmt = $conn->query($sql);
+    $compagnie = $stmt->fetchAll(PDO::FETCH_OBJ);
+    $db = null;
+    $response->getBody()->write(json_encode($compagnie));
+    return $response
+      ->withHeader('content-type', 'application/json')
+      ->withStatus(200);
+  } catch (PDOException $e) {
+    $error = array(
+      "message" => $e->getMessage()
+    );
+ 
+    $response->getBody()->write(json_encode($error));
+    return $response
+      ->withHeader('content-type', 'application/json')
+      ->withStatus(407);
+  }
+ });
+
+
+
+
+
+ //historique d'un dossier
+
+$app->get('/dossier/historique/{nom}', function (Request $request, Response $response,array $args) {
+  $nom = $args['nom'];
+  $request->getAttribute('nom');
+  
+  $sql ="SELECT utilisateur_id,a.date_traitement,b.code_dossier,b.nom,c.code_classeur,d.code_armoire
+	FROM public.traitement a 
+	JOIN public.dossier b 
+	ON a.dossier_id = b.dossier_id
+	JOIN public.classeur c 
+	ON b.classeur_id = c.classeur_id
+	JOIN public.armoire d
+	ON d.armoire_id = c.armoire_id 
+  WHERE b.nom LIKE '%$nom'  
+  ORDER BY a.date_traitement";
+   
   try {
     $db = new Db();
     $conn = $db->connect();
