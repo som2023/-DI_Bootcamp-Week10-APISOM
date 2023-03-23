@@ -1422,9 +1422,9 @@ $app->get('/dossier/one/{dossier_id}', function (Request $request, Response $res
   $dossier = json_decode($data, true);
   $code_dossier= $dossier['code_dossier'];
   $nom= $dossier['nom'];
-  $description= $dossier['descriptions'];
+  $description= $dossier['description'];
   $classeur_id= $dossier['classeur_id'];
-  $sql = "INSERT INTO dossier(code_dossier,nom,description,classeur_id) VALUES (:code_dossier,:nom,:descriptions, :classeur_id)";
+  $sql = "INSERT INTO dossier(code_dossier,nom,description,classeur_id) VALUES (:code_dossier,:nom,:description, :classeur_id)";
   try {
     $db = new Db();
     $conn = $db->connect();
@@ -1432,7 +1432,7 @@ $app->get('/dossier/one/{dossier_id}', function (Request $request, Response $res
    
     $q->bindParam(':code_dossier',$code_dossier);
     $q->bindParam(':nom',$nom);
-    $q->bindParam(':descriptions',$description);
+    $q->bindParam(':description',$description);
     $q->bindParam(':classeur_id',$classeur_id);
      $q->execute();
     $res = [
